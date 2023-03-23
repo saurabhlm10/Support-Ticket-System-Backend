@@ -45,6 +45,9 @@ const issueSchema = new mongoose.Schema({
   chats: {
     type: [String],
     default: []
+  },
+  description: {
+    type: String
   }
 });
 

@@ -7,7 +7,7 @@ function generateUniqueId() {
   return uuid.slice(0, 5);
 }
 
-async function createIssue(type, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, chats) {
+async function createIssue(type, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description) {
   let tokenId = generateUniqueId();
   const status = 'raised';
 
@@ -16,9 +16,7 @@ async function createIssue(type, studentEmail, studentPhone, raiser, potentialHa
   while (await Issue.exists({ tokenId })) {
     tokenId = generateUniqueId();
   }
-    const issue = new Issue({ tokenId, type, status, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, chats });
-
-    const newIssue = await issue.save();
+    const newIssue = await Issue.create({ tokenId, type, status, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description });
     return newIssue;
   } catch (err) {
     return err.message;
@@ -33,16 +31,23 @@ function generateUniqueId() {
 
 exports.noAccess = async (req, res) => {
   try {
-    const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, chats } = req.body
+    const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = req.body
 
-    if (!(studentEmail && studentPhone && raiser && potentialHandlers && handler && info && chats)) {
+    if(potentialHandlers.length < 1 && !handler ){
+      return res.status(401).json({
+        message: "There should be at least one potential handler or handler",
+        success: false
+      })
+    }
+
+    if (!(studentEmail && studentPhone && raiser && potentialHandlers && info)) {
       return res.status(401).json({
         message: "All fields are required",
         success: false
       })
     }
 
-    const response = await createIssue("noAccess", studentEmail, studentPhone, raiser, potentialHandlers, handler, info, chats)
+    const response = await createIssue("noAccess", studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description)
 
     res.status(201).json({
       success: true,
@@ -59,9 +64,55 @@ exports.noAccess = async (req, res) => {
 }
 
 exports.batchChange = async (req, res) => {
+  try {
+    const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = req.body
 
+    if (!(studentEmail && studentPhone && raiser && potentialHandlers && handler && info)) {
+      return res.status(401).json({
+        message: "All fields are required",
+        success: false
+      })
+    }
+
+    const response = await createIssue("batchChange", studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description)
+
+    res.status(201).json({
+      success: true,
+      message: "Issue created successfully",
+      issue: response
+    })
+
+  } catch (error) {
+    res.status(402).json({
+      success: false,
+      message: error.message
+    })
+  }
 }
 
 exports.assignment = async (req, res) => {
+  try {
+    const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = req.body
 
+    if (!(studentEmail && studentPhone && raiser && potentialHandlers && handler && info)) {
+      return res.status(401).json({
+        message: "All fields are required",
+        success: false
+      })
+    }
+
+    const response = await createIssue("assignment", studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description)
+
+    res.status(201).json({
+      success: true,
+      message: "Issue created successfully",
+      issue: response
+    })
+
+  } catch (error) {
+    res.status(402).json({
+      success: false,
+      message: error.message
+    })
+  }
 }
