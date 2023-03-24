@@ -10,12 +10,12 @@ const issueSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["assignment", "batchChange", "noAccess"],
+    enum: ["assignment", "batch-change", "no-access"],
     required: true
   },
   status: {
     type: String,
-    enum: ["raised", "pending", "resolved"],
+    enum: ["not-assigned", "pending", "resolved"],
     required: true
   },
   studentEmail: {
@@ -36,8 +36,9 @@ const issueSchema = new mongoose.Schema({
     ref: 'User',
   },
   handler: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: mongoose.Schema.Types.Mixed,
+    ref: 'User',
+    default: ""
   },
   info: {
     type: mongoose.Schema.Types.Mixed
