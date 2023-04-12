@@ -10,7 +10,7 @@ const issueSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["assignment", "batch-change", "no-access"],
+    enum: ["assignment", "batch-change", "no-access", "other"],
     required: true
   },
   status: {
@@ -49,6 +49,10 @@ const issueSchema = new mongoose.Schema({
   },
   description: {
     type: String
+  },
+  attachments: {
+    type: [String],
+    default: []
   }
 });
 
