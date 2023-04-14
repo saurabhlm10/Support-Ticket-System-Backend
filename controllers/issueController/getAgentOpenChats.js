@@ -1,9 +1,7 @@
 const Issue = require("../../model/Issue")
 
-exports.getAgentOpenAndRequestChats = async (req, res) => {
+exports.getAgentOpenChats = async (req, res) => {
     const { agentId } = req.params
-
-    console.log(agentId)
 
     if (!agentId) {
         return res.status(401).json({
@@ -13,16 +11,26 @@ exports.getAgentOpenAndRequestChats = async (req, res) => {
     }
 
     try {
-        console.log('reached')
-        const response = await Issue.find({
+        const openIssues = await Issue.find({
             raiser: agentId,
-            status: { $in: ["pending", "not-assigned"] }
+            status: 'pending'
         })
+            .populate('handler').exec()
+            .then((updatedResponse) => {
+                updatedResponse.forEach((item) => {
+                    item.handler.password = null
+                })
+
+                return updatedResponse
+            })
+            .catch((e) => {
+                console.log(e)
+            })
 
         res.status(200).json({
             success: true,
             message: 'Agent Open and Requested chats fetched successfully',
-            response
+            openIssues
         })
     } catch (error) {
         console.log(error)
