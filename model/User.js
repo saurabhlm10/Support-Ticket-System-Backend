@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  domain: {
+    type: String,
+    enum: ["java", "javascript", "data-science", "all"],
+    required: true
+  },
   role: {
     type: String,
     enum: ["assignment", "chat", "email", "admin", "discord"],

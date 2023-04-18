@@ -25,10 +25,13 @@ app.use(express.urlencoded({extended: true}))
 const mainRoutes = require("./routes/mainRoutes")
 const authRoutes = require("./routes/authRoutes")
 const issueRoutes = require("./routes/issueRoutes")
+const agentRoutes = require("./routes/agentRoutes")
+
 
 app.use('/api', mainRoutes)
 app.use('/api/auth', authRoutes)
 app.use("/api/issue", issueRoutes)
+app.use("/api/agent", agentRoutes)
 
 const users = {}; // Object to store user data
 

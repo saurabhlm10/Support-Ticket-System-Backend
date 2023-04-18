@@ -4,10 +4,10 @@ const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
     try {
-        const {name, role, email, password} = req.body
+        const {name, domain, role, email, password} = req.body
 
         // Check if all fields are provided
-        if(!(name && role && email && password)){
+        if(!(name && role && domain && email && password)){
             return res.status(401).json({
               code: '401',
               message: 'All fields are required'
@@ -31,6 +31,7 @@ exports.register = async (req, res) => {
       const user = await User.create({
         name,
         role,
+        domain,
         email,
         password: myEnPassword,
       });
