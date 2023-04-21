@@ -8,7 +8,7 @@ exports.getAllAgents = async (req, res) => {
 
 
         tempAllAgentsList.forEach(agent => {
-            console.log(agent); agent.password = null
+            agent.password = null
             allAgentsList.push(agent)
         })
 

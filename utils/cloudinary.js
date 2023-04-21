@@ -12,7 +12,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'support-system',
-        resource_type: 'video',
+        resource_type: 'auto',
         allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov']
     }
 });
@@ -23,7 +23,7 @@ exports.upload = multer({
         fileSize: 1024 * 1024 * 10 // 10MB file size limit
     },
     fileFilter: function (req, file, cb) {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|mp4|mov)$/)) {
+        if (!file.originalname.toLowerCase().match(/\.(jpg|jpeg|png|gif|mp4|mov)$/)) {
             return cb(new Error('Only images and videos are allowed.'));
         }
         cb(null, true);

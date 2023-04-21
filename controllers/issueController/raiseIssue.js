@@ -27,6 +27,13 @@ async function createIssue(type, studentEmail, studentPhone, raiser, potentialHa
 exports.raiseIssue = async (req, res) => {
   const { type } = req.params
 
+  // console.log(req.paymentReceiptImage)
+  // console.log(req.file)
+  // return res.status(200).json({
+  //   files: req.files
+  //   // paymentReceiptImage: req.paymentReceiptImage
+  // })
+
   const issueTypes = ["no-access", "batch-change", "assignment", "other"]
 
   if (!issueTypes.includes(type)) {
@@ -36,7 +43,21 @@ exports.raiseIssue = async (req, res) => {
     })
   }
 
-  const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments } = req.body
+  const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = JSON.parse(req.body.options)
+
+  let attachments = new Array()
+
+  if ((type === 'no-access' || type === 'batch-change') && !info.paymentReceipt) {
+    if(req.files.paymentReceiptImage){
+      info.paymentReceipt = req.files.paymentReceiptImage[0].path
+    }
+  }
+
+  if (req.files['attachmentInput[]'] && req.files['attachmentInput[]'].length > 0) {
+    req.files['attachmentInput[]'].forEach(attachment => {
+      attachments.push(attachment.path)
+    });
+  }
 
   if (potentialHandlers?.length < 1 && !handler) {
     return res.status(401).json({

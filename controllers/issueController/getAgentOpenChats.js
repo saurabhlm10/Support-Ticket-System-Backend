@@ -17,12 +17,15 @@ exports.getAgentOpenChats = async (req, res) => {
         })
             .populate('handler').exec()
             .then((updatedResponse) => {
-                updatedResponse.forEach((item) => {
-                    item.handler.password = null
-                })
+                if (updatedResponse) {
+                    updatedResponse.forEach((item) => {
+                        item.handler.password = null
+                    })
+                    return updatedResponse
+                }
+            }
 
-                return updatedResponse
-            })
+            )
             .catch((e) => {
                 console.log(e)
             })
