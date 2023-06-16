@@ -23,5 +23,8 @@
     "multer-storage-cloudinary": "^4.0.0",
     "socket.io": "^4.6.1",
     "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
