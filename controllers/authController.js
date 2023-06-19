@@ -40,47 +40,54 @@ exports.register = async (req, res) => {
         });
 
         // create token and send it to user
-        const token = jwt.sign(
-            {
-                id: user._id,
-                email,
-            },
-            process.env.SECRET,
-            { expiresIn: "24h" }
-        );
+        // const token = jwt.sign(
+        //     {
+        //         id: user._id,
+        //         email,
+        //     },
+        //     process.env.SECRET,
+        //     { expiresIn: "24h" }
+        // );
 
-        user.token = token;
+        jwt.sign({ userId: user._id, email }, process.env.SECRET, {}, (err, token) => {
+            if (err) throw err;
+            console.log('TOKEN', token)
+            res.cookie('token', token, { secure: true }).status(201).json({
+                id: user._id,
+            });
+        });
+
+
+        // user.token = token;
 
         // dont want to send user to frontend
-        user.password = undefined;
+        // user.password = undefined;
 
         // res.status(201).json({
         //     success: true,
         //     message: "User Registered Successfully",
         //     user
         // });
-        
-        res.status(201).json({
-            success: true,
-            message: "User Registered Successfully",
-            user
-        });
 
 
     } catch (error) {
         console.log(error)
+        if (err) throw err;
+        res.status(500).json('error');
     }
 }
 
 exports.login = async (req, res) => {
     try {
+        console.log('BACKEND LOGIN REACHED')
         // collect info 
         const { email, password } = req.body
+
+        console.log(email, password)
 
         // validate
         if (!(email && password)) {
             return res.status(401).json({
-                code: '401',
                 message: 'Email and Password are Required'
             })
         }
@@ -90,7 +97,6 @@ exports.login = async (req, res) => {
 
         if (!user) {
             return res.status(402).json({
-                code: '402',
                 message: 'User Is Not Registered'
             })
         }
@@ -100,7 +106,6 @@ exports.login = async (req, res) => {
 
         if (!checkPassword) {
             return res.status(403).json({
-                code: '403',
                 message: 'Password Is Incorrect'
             })
         }
@@ -122,7 +127,6 @@ exports.login = async (req, res) => {
         user.token = token
 
         return res.status(201).json({
-            success: true,
             token,
             user
         })

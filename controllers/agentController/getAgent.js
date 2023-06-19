@@ -7,7 +7,7 @@ const User = require('../../model/User')
 
         const agent = await User.findById(userId) 
 
-        console.log(agent)
+        agent.password = undefined
 
         res.status(200).json({
             success: true,
@@ -17,6 +17,6 @@ const User = require('../../model/User')
 
 
     } catch (error) {
-        
+        console.log(error)
     }
  }

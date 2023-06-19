@@ -43,20 +43,22 @@ exports.raiseIssue = async (req, res) => {
     })
   }
 
-  const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = JSON.parse(req.body.options)
+  const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = req.body
 
   let attachments = new Array()
 
   if ((type === 'no-access' || type === 'batch-change') && !info.paymentReceipt) {
-    if(req.files.paymentReceiptImage){
+    if (req.files?.paymentReceiptImage) {
       info.paymentReceipt = req.files.paymentReceiptImage[0].path
     }
   }
 
-  if (req.files['attachmentInput[]'] && req.files['attachmentInput[]'].length > 0) {
-    req.files['attachmentInput[]'].forEach(attachment => {
-      attachments.push(attachment.path)
-    });
+  if (req.files?.length > 0) {
+    if (req.files['attachmentInput[]'] && req.files['attachmentInput[]'].length > 0) {
+      req.files['attachmentInput[]'].forEach(attachment => {
+        attachments.push(attachment.path)
+      });
+    }
   }
 
   if (potentialHandlers?.length < 1 && !handler) {
@@ -66,7 +68,7 @@ exports.raiseIssue = async (req, res) => {
     })
   }
 
-  if (!(studentEmail && studentPhone && raiser && potentialHandlers && info)) {
+  if (!(studentEmail && studentPhone && raiser && info)) {
     return res.status(401).json({
       message: "All fields are required",
       success: false
