@@ -1,6 +1,7 @@
 const User = require("../../model/User");
 const Issue = require("../../model/Issue")
 const { v4: uuidv4 } = require('uuid');
+const Chat = require("../../model/Chat");
 
 function generateUniqueId() {
   const uuid = uuidv4().replace(/-/g, '');
@@ -17,6 +18,15 @@ async function createIssue(type, studentEmail, studentPhone, raiser, potentialHa
       tokenId = generateUniqueId();
     }
     const newIssue = await Issue.create({ tokenId, type, status, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments });
+
+    if (status === "pending") {
+      const participants = [raiser, handler]
+
+      await Chat.create({
+        issueId: tokenId,
+        participants
+      })
+    }
 
     return newIssue;
   } catch (error) {
@@ -76,6 +86,8 @@ exports.raiseIssue = async (req, res) => {
   }
 
   const response = await createIssue(type, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments)
+
+
 
   return res.status(201).json({
     success: true,

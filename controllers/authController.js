@@ -49,7 +49,7 @@ exports.register = async (req, res) => {
         //     { expiresIn: "24h" }
         // );
 
-        jwt.sign({ userId: user._id, email }, process.env.SECRET, {}, (err, token) => {
+        jwt.sign({ userId: user._id, email }, process.env.SECRET, { expiresIn: "24h" }, (err, token) => {
             if (err) throw err;
             console.log('TOKEN', token)
             res.cookie('token', token, { secure: true }).status(201).json({

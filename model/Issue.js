@@ -54,6 +54,8 @@ const issueSchema = new mongoose.Schema({
     type: [String],
     default: []
   }
+}, {
+  timestamps: true
 });
 
 const Issue = mongoose.model('Issue', issueSchema);

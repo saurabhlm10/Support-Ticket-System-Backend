@@ -12,7 +12,10 @@ exports.getAgentOpenChats = async (req, res) => {
 
     try {
         const openIssues = await Issue.find({
-            raiser: agentId,
+            $or: [
+                { raiser: agentId },
+                { handler: agentId }
+            ],
             status: 'pending'
         })
             .populate('handler').exec()

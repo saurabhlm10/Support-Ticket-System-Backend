@@ -10,10 +10,10 @@ const socketIO = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
-    cors : {
-        origin: "http://localhost:3000",
-        methods: ['GET', 'POST'],
-    }
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ['GET', 'POST'],
+  }
 });
 
 connectToDb()
@@ -21,48 +21,50 @@ connectToDb()
 app.use(cors());
 app.use(morgan("tiny"))
 app.use(express.json())
-app.use(express.urlencoded({extended: true}))
+app.use(express.urlencoded({ extended: true }))
 
 const mainRoutes = require("./routes/mainRoutes")
 const authRoutes = require("./routes/authRoutes")
 const issueRoutes = require("./routes/issueRoutes")
 const agentRoutes = require("./routes/agentRoutes")
+const chatRoutes = require("./routes/chatRoutes")
 
 
 app.use('/api', mainRoutes)
 app.use('/api/auth', authRoutes)
 app.use("/api/issue", issueRoutes)
 app.use("/api/agent", agentRoutes)
+app.use("/api/chat", chatRoutes)
 
 const users = {}; // Object to store user data
 
 // Define socket.io event handlers
 io.on('connection', (socket) => {
-    console.log('A user connected', socket.id);
+  console.log('A user connected', socket.id);
 
-    socket.on('register', (username) => {
-        console.log(`${socket.id} registered as ${username}`);
-        users[socket.id] = {
-          username,
-          socket,
-        };
-      });
-  
-      // Handle chat message
-      socket.on('message', (message) => {
-        console.log(`Message received from ${users[socket.id].username}: ${message.text}`);
-        console.log(message)
-        io.emit('message', {
-          username: users[socket.id].username,
-          message,
-        });
-      });
-    
-    // Remove user when disconnected
-    socket.on('disconnect', () => {
-        console.log(`${socket.id} disconnected`);
-        delete users[socket.id];
-      });    
+  socket.on('register', (username) => {
+    console.log(`${socket.id} registered as ${username}`);
+    users[socket.id] = {
+      username,
+      socket,
+    };
   });
+
+  // Handle chat message
+  socket.on('message', (message) => {
+    console.log(`Message received from ${users[socket.id].username}: ${message.text}`);
+    console.log(message)
+    io.emit('message', {
+      username: users[socket.id].username,
+      message,
+    });
+  });
+
+  // Remove user when disconnected
+  socket.on('disconnect', () => {
+    console.log(`${socket.id} disconnected`);
+    delete users[socket.id];
+  });
+});
 
 module.exports = server
