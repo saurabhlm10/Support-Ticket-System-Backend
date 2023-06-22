@@ -1,10 +1,11 @@
+const { db } = require("../../lib/db");
 const { pusherServer } = require("../../lib/pusher");
 
-exports.sendMessage = (req, res) => {
+exports.sendMessage = async (req, res) => {
     try {
-        const { issueId, text, sender } = req.body
+        const { issueId, text, senderId, senderName } = req.body
 
-        if(!issueId) {
+        if (!issueId) {
             return res.status(401).json({
                 success: false,
                 message: "Issue Id Is Missing"
@@ -18,7 +19,14 @@ exports.sendMessage = (req, res) => {
             })
         }
 
-        pusherServer.trigger(issueId, "incoming-message", { text, sender, issueId });
+        const timestamp = Date.now()
+
+        pusherServer.trigger(issueId, "incoming-message", { text, senderId, senderName, issueId, timestamp });
+
+        await db.zadd(`chat:${issueId}:messages`, {
+            score: timestamp,
+            member: JSON.stringify({ text, senderId, senderName, issueId, timestamp }),
+        });
 
         return res.status(200).json({
             success: true,
