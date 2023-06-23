@@ -34,7 +34,7 @@ exports.sendMessage = async (req, res) => {
         //     member: JSON.stringify({ text, senderId, senderName, issueId, timestamp }),
         // });
 
-        await fetchRedis('zadd', `chat:${issueId}:messages`, timestamp, JSON.stringify({ text, senderId, senderName, issueId, timestamp }))
+        // await fetchRedis('zadd', `chat:${issueId}:messages`, timestamp, JSON.stringify({ text, senderId, senderName, issueId, timestamp }))
 
 
         return res.status(200).json({
