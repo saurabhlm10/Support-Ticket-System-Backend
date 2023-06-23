@@ -7,6 +7,7 @@ exports.getChatsByIssueId = async (req, res) => {
         console.log('Issue ID', issueId)
 
         const messages = await db.zrange(`chat:${issueId}:messages`, 0, -1)
+        
 
         res.status(200).json({
             success: true,

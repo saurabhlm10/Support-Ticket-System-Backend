@@ -1,3 +1,4 @@
+const { fetchRedis } = require("../../helpers/fetchRedis");
 const { db } = require("../../lib/db");
 const { pusherServer } = require("../../lib/pusher");
 
@@ -21,12 +22,20 @@ exports.sendMessage = async (req, res) => {
 
         const timestamp = Date.now()
 
-        pusherServer.trigger(issueId, "incoming-message", { text, senderId, senderName, issueId, timestamp });
-
-        await db.zadd(`chat:${issueId}:messages`, {
+        const message = {
             score: timestamp,
             member: JSON.stringify({ text, senderId, senderName, issueId, timestamp }),
-        });
+        }
+
+        pusherServer.trigger(issueId, "incoming-message", { text, senderId, senderName, issueId, timestamp });
+
+        // await db.zadd(`chat:${issueId}:messages`, {
+        //     score: timestamp,
+        //     member: JSON.stringify({ text, senderId, senderName, issueId, timestamp }),
+        // });
+
+        await fetchRedis('zadd', `chat:${issueId}:messages`, timestamp, JSON.stringify({ text, senderId, senderName, issueId, timestamp }))
+
 
         return res.status(200).json({
             success: true,
