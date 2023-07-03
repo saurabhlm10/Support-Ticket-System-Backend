@@ -16,24 +16,20 @@ const axios = require('axios')
 exports.fetchRedis = async (command, ...args) => {
     const commandUrl = `${upstashRedRESTUrl}/${command}/${args.join("/")}`;
 
-    console.log(args)
-    console.log(commandUrl)
+    // return console.log(commandUrl)
 
-    const response = await axios.post(commandUrl, {}, {
+    const response = await axios.get(commandUrl, {
         headers: {
             Authorization: `Bearer ${authToken}`,
         }
     })
 
-    // const response = await fetch(commandUrl, {
-    //     headers: {
-    //         Authorization: `Bearer ${authToken}`,
-    //     }
-    // });
-
-    if (!response.ok) {
+    if (response.statusText !== 'OK') {
         throw new Error(`Error executing Redis command: ${response.statusText}`);
     }
+
+    if (command === 'zadd') return
+
 
     const data = await response.json();
 
