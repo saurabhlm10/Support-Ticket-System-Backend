@@ -2,9 +2,6 @@ const { fetchRedis } = require("../../helpers/fetchRedis")
 const axios = require('axios');
 const { pusherServer } = require("../../lib/pusher");
 
-const upstashRedRESTUrl = process.env.UPSTASH_REDIS_REST_URL;
-const authToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-
 exports.sendFile = async (req, res) => {
     try {
 
