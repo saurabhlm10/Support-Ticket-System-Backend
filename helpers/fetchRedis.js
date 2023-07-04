@@ -3,16 +3,6 @@ const authToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const axios = require('axios')
 
-// type Command = "zrange" | "sismember" | "get" | "smembers";
-
-// async function fetchRedis(
-//     command,
-//     ...args
-// ) {
-
-
-// }
-
 exports.fetchRedis = async (command, ...args) => {
     const commandUrl = `${upstashRedRESTUrl}/${command}/${args.join("/")}`;
 
@@ -30,12 +20,7 @@ exports.fetchRedis = async (command, ...args) => {
 
     if (command === 'zadd') return
 
-
     const data = await response.json();
-
-    // console.log(data)
 
     return data.result;
 }
-
-// module.exports = fetchRedis

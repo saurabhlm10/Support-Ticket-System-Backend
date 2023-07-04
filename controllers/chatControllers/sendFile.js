@@ -5,18 +5,15 @@ const { pusherServer } = require("../../lib/pusher");
 exports.sendFile = async (req, res) => {
     try {
 
-        const { filename, issueId, senderId, senderName } = req.body
-
-        const timestamp = Date.now();
+        const { filename, issueId, senderId, senderName, timestamp } = req.body
 
         const message = {
-            // path: req.file.path.replace(/\//g, '-'),
             path: req.file.path.split('/'),
             filename,
             senderId,
             senderName,
             issueId,
-            timestamp,
+            timestamp: Number(timestamp),
         };
 
         await fetchRedis('zadd', `chat:${issueId}:messages`, timestamp, JSON.stringify(message))

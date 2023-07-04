@@ -4,7 +4,9 @@ const { pusherServer } = require("../../lib/pusher");
 
 exports.sendMessage = async (req, res) => {
     try {
-        const { issueId, text, senderId, senderName } = req.body
+        const { issueId, text, senderId, senderName, timestamp } = req.body
+
+        console.log(req.body)
 
         if (!issueId) {
             return res.status(401).json({
@@ -20,12 +22,20 @@ exports.sendMessage = async (req, res) => {
             })
         }
 
-        const timestamp = Date.now()
-
         const message = {
-            score: timestamp,
-            member: JSON.stringify({ text, senderId, senderName, issueId, timestamp }),
-        }
+            text,
+            senderId,
+            senderName,
+            issueId,
+            timestamp,
+        };
+
+        await fetchRedis(
+            "zadd",
+            `chat:${issueId}:messages`,
+            timestamp,
+            JSON.stringify(message)
+        );
 
         pusherServer.trigger(issueId, "incoming-message", { text, senderId, senderName, issueId, timestamp });
 

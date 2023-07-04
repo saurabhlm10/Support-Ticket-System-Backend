@@ -24,7 +24,7 @@ exports.upload = multer({
     },
     fileFilter: function (req, file, cb) {
         if (!file.originalname.toLowerCase().match(/\.(jpg|jpeg|png|gif|mp4|mov|pdf)$/)) {
-            return cb(new Error('Only images and videos are allowed.'));
+            return cb(new Error('Only images, pdfs and videos are allowed.'));
         }
         cb(null, true);
     }
