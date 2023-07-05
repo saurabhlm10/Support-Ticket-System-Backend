@@ -8,7 +8,7 @@ const { getAgentRequestedChats } = require("../controllers/issueController/getAg
 const { closeIssue } = require("../controllers/issueController/closeIssue");
 const { quickSearchIssue } = require("../controllers/issueController/quickSearchIssue");
 const { acceptIssueRequest } = require("../controllers/issueController/acceptIssueRequest");
-
+const {filterIssues} = require("../controllers/issueController/filterIssues");
 const { upload } = require('../utils/cloudinary');
 
 // router.post("/raiseIssue/:type", upload.single('paymentReceiptImage'), upload.array('attachmentInput'),raiseIssue);
@@ -27,7 +27,7 @@ router.get('/chats/closed/:agentId', getAgentClosedChats)
 router.post('/closeIssue/:issueId', closeIssue)
 router.get('/searchIssue/:searchTerm', quickSearchIssue)
 router.post('/acceptIssueRequest/:issueId/:agentId', acceptIssueRequest)
-
+router.post('/filterIssues', filterIssues)
 
 
 router.post('/upload', upload.single('paymentReceipt'), function (req, res) {
