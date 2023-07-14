@@ -19,6 +19,8 @@ async function createIssue(type, studentEmail, studentPhone, raiser, potentialHa
     }
     const newIssue = await Issue.create({ tokenId, type, status, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments });
 
+    console.log(newIssue)
+
     if (status === "pending") {
       const participants = [raiser, handler]
 
@@ -53,7 +55,9 @@ exports.raiseIssue = async (req, res) => {
     })
   }
 
-  const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = req.body
+  const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = JSON.parse(req.body.options)
+
+  console.log(req.body)
 
   let attachments = new Array()
 
