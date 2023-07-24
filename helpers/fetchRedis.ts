@@ -3,7 +3,7 @@ const authToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 import axios from 'axios';
 
-exports.fetchRedis = async (command, ...args) => {
+export const fetchRedis = async (command, ...args) => {
     const commandUrl = `${upstashRedRESTUrl}/${command}/${args.join("/")}`;
 
     // return console.log(commandUrl)

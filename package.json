@@ -37,6 +37,7 @@
     "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.4",
     "@types/node": "^20.4.4",
+    "@types/uuid": "^9.0.2",
     "nodemon": "^2.0.22",
     "tsc-watch": "^6.0.4"
   }

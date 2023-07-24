@@ -6,7 +6,7 @@ import { MongooseError } from "mongoose";
 interface GetAgentByRoleResponse {
   success: boolean;
   message: string;
-  agents: AgentWithoutPassword[] | [];
+  agents: AgentWithoutPassword[];
 }
 
 const responseObject: GetAgentByRoleResponse = {
@@ -17,7 +17,7 @@ const responseObject: GetAgentByRoleResponse = {
 
 export const getAllAgents = async (req: Request, res: Response) => {
   try {
-    const allAgentsList = (await User.find()) as AgentWithoutPassword[] | [];
+    const allAgentsList = (await User.find()) as AgentWithoutPassword[];
 
     responseObject.success = true;
     responseObject.message = "Agent List Fetched Successfully";

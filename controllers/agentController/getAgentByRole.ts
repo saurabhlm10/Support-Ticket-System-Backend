@@ -6,7 +6,7 @@ import { MongooseError } from "mongoose";
 interface GetAgentByRoleResponse {
   success: boolean;
   message: string;
-  agents: AgentWithoutPassword[] | [];
+  agents: AgentWithoutPassword[];
 }
 
 const responseObject: GetAgentByRoleResponse = {

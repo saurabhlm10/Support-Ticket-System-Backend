@@ -9,4 +9,4 @@ const requester = {
 };
 
 // Pass the requester object to the Redis constructor
-exports.db = new Redis(requester);
+export const db = new Redis(requester);
