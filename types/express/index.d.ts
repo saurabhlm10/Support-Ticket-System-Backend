@@ -7,6 +7,7 @@ declare global {
         file?: {
             path: string
         }
+        // files?: File[]
     }
   }
 }

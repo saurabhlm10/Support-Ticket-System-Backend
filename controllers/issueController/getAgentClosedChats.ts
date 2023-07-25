@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 
 import Issue from "../../model/Issue";
-import { IssueType } from "../../types/Issue";
 import { MongooseError } from "mongoose";
 
 interface GetAgentClosedChatsResponse {
@@ -17,16 +16,16 @@ const responseObject: GetAgentClosedChatsResponse = {
 };
 
 export const getAgentClosedChats = async (req: Request, res: Response) => {
-  const { agentId } = req.params;
+  const { agentEmail } = req.params;
 
-  if (!agentId) {
-    responseObject.message = "agentId Is Missing";
+  if (!agentEmail) {
+    responseObject.message = "agentEmail Is Missing";
     return res.status(401).json(responseObject);
   }
 
   try {
     const closedIssues = (await Issue.find({
-      raiser: agentId,
+      raiser: agentEmail,
       status: "resolved",
     })
       .populate("handler")

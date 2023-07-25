@@ -8,23 +8,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const { db } = require("../../lib/db");
-exports.getChatsByIssueId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getChatsByIssueId = void 0;
+const db_1 = require("../../lib/db");
+const mongoose_1 = require("mongoose");
+const responseObject = {
+    success: false,
+    message: "",
+    messages: [],
+};
+const getChatsByIssueId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { issueId } = req.params;
-        console.log('Issue ID', issueId);
-        const messages = yield db.zrange(`chat:${issueId}:messages`, 0, -1);
-        res.status(200).json({
-            success: true,
-            message: 'Fetched Messages Successfully',
-            messages
-        });
+        if (!issueId) {
+            responseObject.message = "Issue Id Is Missing";
+            res.status(401).json(responseObject);
+        }
+        const messages = (yield db_1.db.zrange(`chat:${issueId}:messages`, 0, -1));
+        responseObject.success = true;
+        responseObject.message = "Messages Fetched Successfully";
+        responseObject.messages = messages;
+        res.status(200).json(responseObject);
     }
     catch (error) {
         console.log(error);
-        res.status(400).json({
-            success: false,
-            message: 'Something Went Wrong'
-        });
+        if (error instanceof mongoose_1.MongooseError) {
+            responseObject.message =
+                error.name === "CastError" ? "Invalid issueId" : error.message;
+            return res.status(401).json(responseObject);
+        }
+        if (error instanceof Error) {
+            responseObject.message = error.message;
+            return res.status(500).json(responseObject);
+        }
     }
 });
+exports.getChatsByIssueId = getChatsByIssueId;

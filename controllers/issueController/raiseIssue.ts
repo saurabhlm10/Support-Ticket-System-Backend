@@ -1,101 +1,182 @@
-const User = require("../../model/User");
-const Issue = require("../../model/Issue")
-const { v4: uuidv4 } = require('uuid');
-const Chat = require("../../model/Chat");
+import { Request, Response } from "express";
+
+import User from "../../model/User";
+import Issue from "../../model/Issue";
+import { v4 as uuidv4 } from "uuid";
+import Chat from "../../model/Chat";
+import { IssueType } from "../../types/Issue";
+import { MongooseError } from "mongoose";
 
 function generateUniqueId() {
-  const uuid = uuidv4().replace(/-/g, '');
+  const uuid: string = uuidv4().replace(/-/g, "");
   return uuid.slice(0, 5);
 }
 
-async function createIssue(type, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments) {
+async function createIssue(
+  type: string,
+  studentEmail: string,
+  studentPhone: string,
+  raiser: string,
+  potentialHandlers: string[],
+  handler: string,
+  info: object,
+  description: string,
+  attachments: any
+) {
   let tokenId = generateUniqueId();
-  const status = handler ? "pending" : 'not-assigned';
+  const status = handler ? "pending" : "not-assigned";
 
   try {
     // Check if token ID already exists in the database
     while (await Issue.exists({ tokenId })) {
       tokenId = generateUniqueId();
     }
-    const newIssue = await Issue.create({ tokenId, type, status, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments });
+    const newIssue = (await Issue.create({
+      tokenId,
+      type,
+      status,
+      studentEmail,
+      studentPhone,
+      raiser,
+      potentialHandlers,
+      handler,
+      info,
+      description,
+      attachments,
+    })) as IssueType | null;
 
-    console.log(newIssue)
+    console.log(newIssue);
 
     if (status === "pending") {
-      const participants = [raiser, handler]
+      const participants = [raiser, handler];
 
       await Chat.create({
         issueId: tokenId,
-        participants
-      })
+        participants,
+      });
     }
 
     return newIssue;
   } catch (error) {
-    return error.message
+    console.log(error);
+    if (error instanceof MongooseError) {
+      let message = error.name === "CastError" ? "Invalid Ids" : error.message;
+      return message;
+    }
+    if (error instanceof Error) {
+      let message = error.message;
+      return message;
+    }
   }
 }
 
-exports.raiseIssue = async (req, res) => {
-  const { type } = req.params
+interface RaiseIssueResponse {
+  success: boolean;
+  message: string;
+  issue: IssueType | {};
+}
 
-  // console.log(req.paymentReceiptImage)
-  // console.log(req.file)
-  // return res.status(200).json({
-  //   files: req.files
-  //   // paymentReceiptImage: req.paymentReceiptImage
-  // })
+const responseObject: RaiseIssueResponse = {
+  success: false,
+  message: "",
+  issue: {},
+};
 
-  const issueTypes = ["no-access", "batch-change", "assignment", "other"]
+export const raiseIssue = async (req: Request, res: Response) => {
+  const { type } = req.params;
+
+  if (!type) {
+    responseObject.message = "type Is Missing";
+    return res.status(401).json(responseObject);
+  }
+
+  const issueTypes = ["no-access", "batch-change", "assignment", "other"];
 
   if (!issueTypes.includes(type)) {
     return res.status(402).json({
       success: false,
-      message: "Please select a type of issue"
-    })
+      message: "Please select a type of issue",
+    });
   }
+  
+  console.log("Files", req.files, req.file)
+    
 
-  const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = JSON.parse(req.body.options)
+  const {
+    studentEmail,
+    studentPhone,
+    raiser,
+    potentialHandlers,
+    handler,
+    info,
+    description,
+  } = JSON.parse(req.body?.options || {});
 
-  console.log(req.body)
+  let attachments = new Array();
 
-  let attachments = new Array()
-
-  if ((type === 'no-access' || type === 'batch-change') && !info.paymentReceipt) {
-    if (req.files?.paymentReceiptImage) {
-      info.paymentReceipt = req.files.paymentReceiptImage[0].path
+  if (
+    (type === "no-access" || type === "batch-change") &&
+    !info.paymentReceipt
+  ) {
+    // debug it
+    if (
+      (req.files as { [fieldname: string]: Express.Multer.File[] })
+        .paymentReceiptImage
+    ) {
+      info.paymentReceipt = (
+        req.files as { [fieldname: string]: Express.Multer.File[] }
+      ).paymentReceiptImage[0].path;
     }
-  }
 
-  if (req.files?.length > 0) {
-    if (req.files['attachmentInput[]'] && req.files['attachmentInput[]'].length > 0) {
-      req.files['attachmentInput[]'].forEach(attachment => {
-        attachments.push(attachment.path)
-      });
+    // if (req.files?.length > 0) {
+    //   if (
+    //     req.files["attachmentInput[]"] &&
+    //     req.files["attachmentInput[]"].length > 0
+    //   ) {
+    //     req.files["attachmentInput[]"].forEach((attachment: any) => {
+    //       attachments.push(attachment.path);
+    //     });
+    //   }
+    // }
+
+    if (
+      (req.files as { length?: number })?.length &&
+      (req.files as { [key: string]: any })["attachmentInput[]"] &&
+      (req.files as { [key: string]: any })["attachmentInput[]"].length > 0
+    ) {
+      (req.files as { [key: string]: any })["attachmentInput[]"].forEach(
+        (attachment: any) => {
+          attachments.push(attachment.path);
+        }
+      );
     }
+
+    if (potentialHandlers?.length < 1 && !handler) {
+      responseObject.message = "At least one potential handler is required";
+      return res.status(401).json(responseObject);
+    }
+
+    if (!(studentEmail && studentPhone && raiser && info)) {
+      responseObject.message = "All fields are required";
+      return res.status(401).json(responseObject);
+    }
+
+    const response = await createIssue(
+      type,
+      studentEmail,
+      studentPhone,
+      raiser,
+      potentialHandlers,
+      handler,
+      info,
+      description,
+      attachments
+    );
+
+    responseObject.success = true;
+    responseObject.message = "Issue Raised successfully";
+    responseObject.issue = response as IssueType;
+
+    return res.status(200).json(responseObject);
   }
-
-  if (potentialHandlers?.length < 1 && !handler) {
-    return res.status(401).json({
-      message: "There should be at least one potential handler or handler",
-      success: false
-    })
-  }
-
-  if (!(studentEmail && studentPhone && raiser && info)) {
-    return res.status(401).json({
-      message: "All fields are required",
-      success: false
-    })
-  }
-
-  const response = await createIssue(type, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments)
-
-
-
-  return res.status(201).json({
-    success: true,
-    message: "Issue created successfully",
-    issue: response
-  })
-}
+};

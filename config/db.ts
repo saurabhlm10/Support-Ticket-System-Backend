@@ -6,7 +6,7 @@ const connectToDb = () => {
         console.log(`connected to db at ${conn.connection.host}`);
     })
     .catch((error) => {
-        console.log(error.message , "wrong password")
+        console.log(error.message)
         process.exit(1)
     })
 }

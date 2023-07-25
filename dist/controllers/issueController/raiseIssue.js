@@ -8,86 +8,123 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const User = require("../../model/User");
-const Issue = require("../../model/Issue");
-const { v4: uuidv4 } = require('uuid');
-const Chat = require("../../model/Chat");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.raiseIssue = void 0;
+const Issue_1 = __importDefault(require("../../model/Issue"));
+const uuid_1 = require("uuid");
+const Chat_1 = __importDefault(require("../../model/Chat"));
+const mongoose_1 = require("mongoose");
 function generateUniqueId() {
-    const uuid = uuidv4().replace(/-/g, '');
+    const uuid = (0, uuid_1.v4)().replace(/-/g, "");
     return uuid.slice(0, 5);
 }
 function createIssue(type, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments) {
     return __awaiter(this, void 0, void 0, function* () {
         let tokenId = generateUniqueId();
-        const status = handler ? "pending" : 'not-assigned';
+        const status = handler ? "pending" : "not-assigned";
         try {
             // Check if token ID already exists in the database
-            while (yield Issue.exists({ tokenId })) {
+            while (yield Issue_1.default.exists({ tokenId })) {
                 tokenId = generateUniqueId();
             }
-            const newIssue = yield Issue.create({ tokenId, type, status, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments });
+            const newIssue = (yield Issue_1.default.create({
+                tokenId,
+                type,
+                status,
+                studentEmail,
+                studentPhone,
+                raiser,
+                potentialHandlers,
+                handler,
+                info,
+                description,
+                attachments,
+            }));
             console.log(newIssue);
             if (status === "pending") {
                 const participants = [raiser, handler];
-                yield Chat.create({
+                yield Chat_1.default.create({
                     issueId: tokenId,
-                    participants
+                    participants,
                 });
             }
             return newIssue;
         }
         catch (error) {
-            return error.message;
+            console.log(error);
+            if (error instanceof mongoose_1.MongooseError) {
+                let message = error.name === "CastError" ? "Invalid Ids" : error.message;
+                return message;
+            }
+            if (error instanceof Error) {
+                let message = error.message;
+                return message;
+            }
         }
     });
 }
-exports.raiseIssue = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const responseObject = {
+    success: false,
+    message: "",
+    issue: {},
+};
+const raiseIssue = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const { type } = req.params;
-    // console.log(req.paymentReceiptImage)
-    // console.log(req.file)
-    // return res.status(200).json({
-    //   files: req.files
-    //   // paymentReceiptImage: req.paymentReceiptImage
-    // })
+    if (!type) {
+        responseObject.message = "type Is Missing";
+        return res.status(401).json(responseObject);
+    }
     const issueTypes = ["no-access", "batch-change", "assignment", "other"];
     if (!issueTypes.includes(type)) {
         return res.status(402).json({
             success: false,
-            message: "Please select a type of issue"
+            message: "Please select a type of issue",
         });
     }
-    const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description } = JSON.parse(req.body.options);
-    console.log(req.body);
+    console.log("Files", req.files, req.file);
+    const { studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, } = JSON.parse(((_a = req.body) === null || _a === void 0 ? void 0 : _a.options) || {});
     let attachments = new Array();
-    if ((type === 'no-access' || type === 'batch-change') && !info.paymentReceipt) {
-        if ((_a = req.files) === null || _a === void 0 ? void 0 : _a.paymentReceiptImage) {
+    if ((type === "no-access" || type === "batch-change") &&
+        !info.paymentReceipt) {
+        // debug it
+        if (req.files
+            .paymentReceiptImage) {
             info.paymentReceipt = req.files.paymentReceiptImage[0].path;
         }
-    }
-    if (((_b = req.files) === null || _b === void 0 ? void 0 : _b.length) > 0) {
-        if (req.files['attachmentInput[]'] && req.files['attachmentInput[]'].length > 0) {
-            req.files['attachmentInput[]'].forEach(attachment => {
+        // if (req.files?.length > 0) {
+        //   if (
+        //     req.files["attachmentInput[]"] &&
+        //     req.files["attachmentInput[]"].length > 0
+        //   ) {
+        //     req.files["attachmentInput[]"].forEach((attachment: any) => {
+        //       attachments.push(attachment.path);
+        //     });
+        //   }
+        // }
+        if (((_b = req.files) === null || _b === void 0 ? void 0 : _b.length) &&
+            req.files["attachmentInput[]"] &&
+            req.files["attachmentInput[]"].length > 0) {
+            req.files["attachmentInput[]"].forEach((attachment) => {
                 attachments.push(attachment.path);
             });
         }
+        if ((potentialHandlers === null || potentialHandlers === void 0 ? void 0 : potentialHandlers.length) < 1 && !handler) {
+            responseObject.message = "At least one potential handler is required";
+            return res.status(401).json(responseObject);
+        }
+        if (!(studentEmail && studentPhone && raiser && info)) {
+            responseObject.message = "All fields are required";
+            return res.status(401).json(responseObject);
+        }
+        const response = yield createIssue(type, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments);
+        responseObject.success = true;
+        responseObject.message = "Issue Raised successfully";
+        responseObject.issue = response;
+        return res.status(200).json(responseObject);
     }
-    if ((potentialHandlers === null || potentialHandlers === void 0 ? void 0 : potentialHandlers.length) < 1 && !handler) {
-        return res.status(401).json({
-            message: "There should be at least one potential handler or handler",
-            success: false
-        });
-    }
-    if (!(studentEmail && studentPhone && raiser && info)) {
-        return res.status(401).json({
-            message: "All fields are required",
-            success: false
-        });
-    }
-    const response = yield createIssue(type, studentEmail, studentPhone, raiser, potentialHandlers, handler, info, description, attachments);
-    return res.status(201).json({
-        success: true,
-        message: "Issue created successfully",
-        issue: response
-    });
 });
+exports.raiseIssue = raiseIssue;

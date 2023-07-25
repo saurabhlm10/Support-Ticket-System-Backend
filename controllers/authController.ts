@@ -1,137 +1,154 @@
-const User = require("../model/User");
-const bcrypt = require('bcryptjs')
-const jwt = require("jsonwebtoken");
+import { Request, Response } from "express";
 
-exports.register = async (req, res) => {
-    try {
-        let { name, domain, role, email, password } = req.body
+import User from "../model/User";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { MongooseError } from "mongoose";
+import { Agent } from "../types/Agent";
 
-        role = role.toLowerCase()
-        domain = domain.toLowerCase()
+interface RegisterResponse {
+  success: boolean;
+  message: string;
+  id: string;
+}
 
-        // Check if all fields are provided
-        if (!(name && role && domain && email && password)) {
-            return res.status(401).json({
-                code: '401',
-                message: 'All fields are required'
-            })
-        }
+const responseObject: RegisterResponse = {
+  success: false,
+  message: "",
+  id: "",
+};
 
-        // check if user already exists or not
-        const userAlreadyExists = await User.findOne({ email });
-        if (userAlreadyExists) {
-            // throw new Error("User Already Exists")
-            return res.status(402).json({
-                code: '402',
-                message: 'This Email Is Already Registered'
-            });
-        }
+export const register = async (req: Request, res: Response) => {
+  try {
+    let { name, domain, role, email, password } = req.body;
 
-        // encrypt password
-        const myEnPassword = bcrypt.hashSync(password, 10);
+    role = role.toLowerCase();
+    domain = domain.toLowerCase();
 
-        // create a new entry in db
-        const user = await User.create({
-            name,
-            role,
-            domain,
-            email,
-            password: myEnPassword,
-        });
+    // Check if all fields are provided
+    if (!(name && role && domain && email && password)) {
+      responseObject.message = "All fields are required";
+      return res.status(401).json(responseObject);
+    }
 
-        // create token and send it to user
-        // const token = jwt.sign(
-        //     {
-        //         id: user._id,
-        //         email,
-        //     },
-        //     process.env.SECRET,
-        //     { expiresIn: "24h" }
-        // );
+    // check if user already exists or not
+    const userAlreadyExists = await User.findOne({ email });
+    if (userAlreadyExists) {
+      responseObject.message = "This Email Is Already Registered";
+      return res.status(402).json(responseObject);
+    }
 
-        jwt.sign({ userId: user._id, email }, process.env.SECRET, { expiresIn: "24h" }, (err, token) => {
-            if (err) throw err;
-            console.log('TOKEN', token)
-            res.cookie('token', token, { secure: true }).status(201).json({
-                id: user._id,
-            });
-        });
+    // encrypt password
+    const myEnPassword = bcrypt.hashSync(password, 10);
 
+    // create a new entry in db
+    const user = (await User.create({
+      name,
+      role,
+      domain,
+      email,
+      password: myEnPassword,
+    })) as Agent | null;
 
-        // user.token = token;
+    responseObject.success = true;
+    responseObject.message = "User Registered successfully";
+    responseObject.id = user?._id;
 
-        // dont want to send user to frontend
-        // user.password = undefined;
-
-        // res.status(201).json({
-        //     success: true,
-        //     message: "User Registered Successfully",
-        //     user
-        // });
-
-
-    } catch (error) {
-        console.log(error)
+    jwt.sign(
+      { userId: user?._id, email },
+      process.env.SECRET!,
+      { expiresIn: "24h" },
+      (err, token) => {
         if (err) throw err;
-        res.status(500).json('error');
+        res
+          .cookie("token", token, { secure: true })
+          .status(200)
+          .json(responseObject);
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    if (error instanceof MongooseError) {
+      responseObject.message =
+        error.name === "CastError" ? "Invalid Ids" : error.message;
+      return res.status(401).json(responseObject);
     }
+    if (error instanceof Error) {
+      responseObject.message = error.message;
+      return res.status(500).json(responseObject);
+    }
+  }
+};
+
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  user: Agent | {};
 }
 
-exports.login = async (req, res) => {
-    try {
-        console.log('BACKEND LOGIN REACHED')
-        // collect info 
-        const { email, password } = req.body
+const loginResponseObject: LoginResponse = {
+  success: false,
+  message: "",
+  user: {},
+};
 
-        console.log(email, password)
+export const login = async (req: Request, res: Response) => {
+  try {
+    // collect info
+    const { email, password } = req.body;
 
-        // validate
-        if (!(email && password)) {
-            return res.status(401).json({
-                message: 'Email and Password are Required'
-            })
-        }
+    console.log(email, password);
 
-        // check if user exists
-        const user = await User.findOne({ email })
-
-        if (!user) {
-            return res.status(402).json({
-                message: 'User Is Not Registered'
-            })
-        }
-
-        // Check if password in correct
-        const checkPassword = await bcrypt.compare(password, user.password)
-
-        if (!checkPassword) {
-            return res.status(403).json({
-                message: 'Password Is Incorrect'
-            })
-        }
-
-        const token = jwt.sign(
-            {
-                id: user._id,
-                email,
-                role: user.role
-            },
-            process.env.SECRET,
-            {
-                expiresIn: '24h'
-            }
-        )
-
-        user.password = undefined
-
-        user.token = token
-
-        return res.status(201).json({
-            token,
-            user
-        })
-
-    } catch (error) {
-        console.log(error)
+    // validate
+    if (!(email && password)) {
+      responseObject.message = "Email and Password are Required";
+      return res.status(401).json(loginResponseObject);
     }
-}
+
+    // check if user exists
+    const user = (await User.findOne({ email })) as Agent | null;
+
+    if (!user) {
+      loginResponseObject.message = "User Is Not Registered";
+      return res.status(401).json(responseObject);
+    }
+
+    // Check if password in correct
+    const checkPassword = await bcrypt.compare(password, user.password);
+
+    if (!checkPassword) {
+      loginResponseObject.message = "Password Is Incorrect";
+      return res.status(401).json(responseObject);
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email,
+        role: user.role,
+      },
+      process.env.SECRET!,
+      {
+        expiresIn: "24h",
+      }
+    );
+
+    loginResponseObject.success = true;
+    loginResponseObject.message = "User Logged In";
+    loginResponseObject.user = user;
+
+    return res.status(200).json(loginResponseObject);
+  } catch (error) {
+    console.log(error);
+    loginResponseObject.user = {};
+    if (error instanceof MongooseError) {
+      responseObject.message =
+        error.name === "CastError" ? "Invalid Ids" : error.message;
+      return res.status(401).json(loginResponseObject);
+    }
+    if (error instanceof Error) {
+      responseObject.message = error.message;
+      return res.status(500).json(loginResponseObject);
+    }
+  }
+};

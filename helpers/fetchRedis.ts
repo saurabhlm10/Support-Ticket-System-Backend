@@ -1,26 +1,26 @@
 const upstashRedRESTUrl = process.env.UPSTASH_REDIS_REST_URL;
 const authToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-import axios from 'axios';
+import axios from "axios";
 
-export const fetchRedis = async (command, ...args) => {
-    const commandUrl = `${upstashRedRESTUrl}/${command}/${args.join("/")}`;
+export const fetchRedis = async (command: string, ...args: string[]) => {
+  const commandUrl = `${upstashRedRESTUrl}/${command}/${args.join("/")}`;
 
-    // return console.log(commandUrl)
+  // return console.log(commandUrl)
 
-    const response = await axios.get(commandUrl, {
-        headers: {
-            Authorization: `Bearer ${authToken}`,
-        }
-    })
+  const response = await axios.get(commandUrl, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
 
-    if (response.statusText !== 'OK') {
-        throw new Error(`Error executing Redis command: ${response.statusText}`);
-    }
+  if (response.statusText !== "OK") {
+    throw new Error(`Error executing Redis command: ${response.statusText}`);
+  }
 
-    if (command === 'zadd') return
+  if (command === "zadd") return;
 
-    // const data = await response.json();
+  const data = await response.data;
 
-    return data.result;
-}
+  return data.result;
+};

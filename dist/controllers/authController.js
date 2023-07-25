@@ -8,114 +8,123 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const User = require("../model/User");
-const bcrypt = require('bcryptjs');
-const jwt = require("jsonwebtoken");
-exports.register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.login = exports.register = void 0;
+const User_1 = __importDefault(require("../model/User"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const mongoose_1 = require("mongoose");
+const responseObject = {
+    success: false,
+    message: "",
+    id: "",
+};
+const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let { name, domain, role, email, password } = req.body;
         role = role.toLowerCase();
         domain = domain.toLowerCase();
         // Check if all fields are provided
         if (!(name && role && domain && email && password)) {
-            return res.status(401).json({
-                code: '401',
-                message: 'All fields are required'
-            });
+            responseObject.message = "All fields are required";
+            return res.status(401).json(responseObject);
         }
         // check if user already exists or not
-        const userAlreadyExists = yield User.findOne({ email });
+        const userAlreadyExists = yield User_1.default.findOne({ email });
         if (userAlreadyExists) {
-            // throw new Error("User Already Exists")
-            return res.status(402).json({
-                code: '402',
-                message: 'This Email Is Already Registered'
-            });
+            responseObject.message = "This Email Is Already Registered";
+            return res.status(402).json(responseObject);
         }
         // encrypt password
-        const myEnPassword = bcrypt.hashSync(password, 10);
+        const myEnPassword = bcryptjs_1.default.hashSync(password, 10);
         // create a new entry in db
-        const user = yield User.create({
+        const user = (yield User_1.default.create({
             name,
             role,
             domain,
             email,
             password: myEnPassword,
-        });
-        // create token and send it to user
-        // const token = jwt.sign(
-        //     {
-        //         id: user._id,
-        //         email,
-        //     },
-        //     process.env.SECRET,
-        //     { expiresIn: "24h" }
-        // );
-        jwt.sign({ userId: user._id, email }, process.env.SECRET, { expiresIn: "24h" }, (err, token) => {
+        }));
+        responseObject.success = true;
+        responseObject.message = "User Registered successfully";
+        responseObject.id = user === null || user === void 0 ? void 0 : user._id;
+        jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user._id, email }, process.env.SECRET, { expiresIn: "24h" }, (err, token) => {
             if (err)
                 throw err;
-            console.log('TOKEN', token);
-            res.cookie('token', token, { secure: true }).status(201).json({
-                id: user._id,
-            });
+            res
+                .cookie("token", token, { secure: true })
+                .status(200)
+                .json(responseObject);
         });
-        // user.token = token;
-        // dont want to send user to frontend
-        // user.password = undefined;
-        // res.status(201).json({
-        //     success: true,
-        //     message: "User Registered Successfully",
-        //     user
-        // });
     }
     catch (error) {
         console.log(error);
-        if (err)
-            throw err;
-        res.status(500).json('error');
+        if (error instanceof mongoose_1.MongooseError) {
+            responseObject.message =
+                error.name === "CastError" ? "Invalid Ids" : error.message;
+            return res.status(401).json(responseObject);
+        }
+        if (error instanceof Error) {
+            responseObject.message = error.message;
+            return res.status(500).json(responseObject);
+        }
     }
 });
-exports.login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.register = register;
+const loginResponseObject = {
+    success: false,
+    message: "",
+    user: {},
+};
+const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('BACKEND LOGIN REACHED');
-        // collect info 
+        // collect info
         const { email, password } = req.body;
         console.log(email, password);
         // validate
         if (!(email && password)) {
-            return res.status(401).json({
-                message: 'Email and Password are Required'
-            });
+            responseObject.message = "Email and Password are Required";
+            return res.status(401).json(loginResponseObject);
         }
         // check if user exists
-        const user = yield User.findOne({ email });
+        const user = (yield User_1.default.findOne({ email }));
         if (!user) {
-            return res.status(402).json({
-                message: 'User Is Not Registered'
-            });
+            loginResponseObject.message = "User Is Not Registered";
+            return res.status(401).json(responseObject);
         }
         // Check if password in correct
-        const checkPassword = yield bcrypt.compare(password, user.password);
+        const checkPassword = yield bcryptjs_1.default.compare(password, user.password);
         if (!checkPassword) {
-            return res.status(403).json({
-                message: 'Password Is Incorrect'
-            });
+            loginResponseObject.message = "Password Is Incorrect";
+            return res.status(401).json(responseObject);
         }
-        const token = jwt.sign({
+        const token = jsonwebtoken_1.default.sign({
             id: user._id,
             email,
-            role: user.role
+            role: user.role,
         }, process.env.SECRET, {
-            expiresIn: '24h'
+            expiresIn: "24h",
         });
-        user.password = undefined;
-        user.token = token;
-        return res.status(201).json({
-            token,
-            user
-        });
+        loginResponseObject.success = true;
+        loginResponseObject.message = "User Logged In";
+        loginResponseObject.user = user;
+        return res.status(200).json(loginResponseObject);
     }
     catch (error) {
         console.log(error);
+        loginResponseObject.user = {};
+        if (error instanceof mongoose_1.MongooseError) {
+            responseObject.message =
+                error.name === "CastError" ? "Invalid Ids" : error.message;
+            return res.status(401).json(loginResponseObject);
+        }
+        if (error instanceof Error) {
+            responseObject.message = error.message;
+            return res.status(500).json(loginResponseObject);
+        }
     }
 });
+exports.login = login;

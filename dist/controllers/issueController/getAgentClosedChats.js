@@ -8,21 +8,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const Issue = require("../../model/Issue");
-exports.getAgentClosedChats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { agentId } = req.params;
-    if (!agentId) {
-        return res.status(401).json({
-            success: false,
-            message: 'AgentId Is Missing'
-        });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAgentClosedChats = void 0;
+const Issue_1 = __importDefault(require("../../model/Issue"));
+const mongoose_1 = require("mongoose");
+const responseObject = {
+    success: false,
+    message: "",
+    issues: [],
+};
+const getAgentClosedChats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { agentEmail } = req.params;
+    if (!agentEmail) {
+        responseObject.message = "agentEmail Is Missing";
+        return res.status(401).json(responseObject);
     }
     try {
-        const closedIssues = yield Issue.find({
-            raiser: agentId,
-            status: 'resolved'
+        const closedIssues = (yield Issue_1.default.find({
+            raiser: agentEmail,
+            status: "resolved",
         })
-            .populate('handler').exec()
+            .populate("handler")
+            .exec()
             .then((updatedClosedIssues) => {
             updatedClosedIssues.forEach((item) => {
                 item.handler.password = null;
@@ -31,14 +41,24 @@ exports.getAgentClosedChats = (req, res) => __awaiter(void 0, void 0, void 0, fu
         })
             .catch((e) => {
             console.log(e);
-        });
-        res.status(200).json({
-            success: true,
-            message: 'Agent Closed Chats fetched successfully',
-            closedIssues
-        });
+            return [];
+        }));
+        responseObject.success = true;
+        responseObject.message = "Agent Closed Chats fetched successfully";
+        responseObject.issues = closedIssues;
+        res.status(200).json(responseObject);
     }
     catch (error) {
         console.log(error);
+        if (error instanceof mongoose_1.MongooseError) {
+            responseObject.message =
+                error.name === "CastError" ? "Invalid Ids" : error.message;
+            return res.status(401).json(responseObject);
+        }
+        if (error instanceof Error) {
+            responseObject.message = error.message;
+            return res.status(500).json(responseObject);
+        }
     }
 });
+exports.getAgentClosedChats = getAgentClosedChats;

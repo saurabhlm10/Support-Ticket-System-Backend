@@ -8,24 +8,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const { fetchRedis } = require("../../helpers/fetchRedis");
-const { db } = require("../../lib/db");
-const { pusherServer } = require("../../lib/pusher");
-exports.sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sendMessage = void 0;
+const fetchRedis_1 = require("../../helpers/fetchRedis");
+const pusher_1 = require("../../lib/pusher");
+const mongoose_1 = require("mongoose");
+const responseObject = {
+    success: false,
+    message: "",
+};
+const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { issueId, text, senderId, senderName, timestamp } = req.body;
-        console.log(req.body);
         if (!issueId) {
-            return res.status(401).json({
-                success: false,
-                message: "Issue Id Is Missing"
-            });
+            responseObject.message = "Issue Id Is Missing";
+            return res.status(401).json(responseObject);
         }
         if (!text) {
-            return res.status(401).json({
-                success: false,
-                message: "Text Cannot Be Empty"
-            });
+            responseObject.message = "Text Cannot Be Empty";
+            return res.status(401).json(responseObject);
+        }
+        if (!(senderId && senderName && timestamp)) {
+            responseObject.message = "All fields are Required";
+            return res.status(401).json(responseObject);
         }
         const message = {
             text,
@@ -34,20 +39,29 @@ exports.sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             issueId,
             timestamp,
         };
-        yield fetchRedis("zadd", `chat:${issueId}:messages`, timestamp, JSON.stringify(message));
-        pusherServer.trigger(issueId, "incoming-message", { text, senderId, senderName, issueId, timestamp });
-        // await db.zadd(`chat:${issueId}:messages`, {
-        //     score: timestamp,
-        //     member: JSON.stringify({ text, senderId, senderName, issueId, timestamp }),
-        // });
-        // await fetchRedis('zadd', `chat:${issueId}:messages`, timestamp, JSON.stringify({ text, senderId, senderName, issueId, timestamp }))
-        return res.status(200).json({
-            success: true,
-            message: "Message Sent Successfully"
+        yield (0, fetchRedis_1.fetchRedis)("zadd", `chat:${issueId}:messages`, timestamp, JSON.stringify(message));
+        pusher_1.pusherServer.trigger(issueId, "incoming-message", {
+            text,
+            senderId,
+            senderName,
+            issueId,
+            timestamp,
         });
+        responseObject.success = true;
+        responseObject.message = "Message Sent Successfully";
+        return res.status(200).json(responseObject);
     }
     catch (error) {
         console.log(error);
-        res.status(400).json({ success: false, message: "Something Went Wrong" });
+        if (error instanceof mongoose_1.MongooseError) {
+            responseObject.message =
+                error.name === "CastError" ? "Invalid Ids" : error.message;
+            return res.status(401).json(responseObject);
+        }
+        if (error instanceof Error) {
+            responseObject.message = error.message;
+            return res.status(500).json(responseObject);
+        }
     }
 });
+exports.sendMessage = sendMessage;

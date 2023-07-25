@@ -18,6 +18,7 @@ router.post("/raiseIssue/:type",
         { name: 'paymentReceiptImage' },
         { name: 'attachmentInput[]', maxCount: 30 }
     ]),
+    // upload.single('paymentReceiptImage'),
     raiseIssue);
 
 
@@ -30,17 +31,5 @@ router.post('/acceptIssueRequest/:issueId/:agentId', acceptIssueRequest)
 router.post('/filterIssues', filterIssues)
 
 
-router.post('/upload', upload.single('paymentReceipt'), function (req, res) {
-    // res.send('File uploaded successfully.');
 
-    console.log(req.files)
-    // console.log(req.body.otherFields)
-    const imageUrls = req.files.map(file => file.path);
-    imageUrls.forEach(element => {
-        console.log(element)
-    });
-    res.send(`Uploaded images: ${imageUrls.join(', ')}`);
-});
-
-
-module.exports = router;
+export default router;

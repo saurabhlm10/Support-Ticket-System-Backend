@@ -1,12 +1,12 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { upload } = require('../utils/cloudinary');
+import { upload } from '../utils/cloudinary';
 
 
-const { sendMessage } = require("../controllers/chatControllers/sendMessage");
-const { getChat } = require("../controllers/chatControllers/getChat");
-const { getChatsByIssueId } = require("../controllers/chatControllers/getChatsByIssueId");
-const { sendFile } = require("../controllers/chatControllers/sendFile");
+import { sendMessage } from "../controllers/chatControllers/sendMessage";
+import { getChat } from "../controllers/chatControllers/getChat";
+import { getChatsByIssueId } from "../controllers/chatControllers/getChatsByIssueId";
+import { sendFile } from "../controllers/chatControllers/sendFile";
 
 router.post('/sendMessage', sendMessage)
 router.post('/sendFile', upload.single('file'), sendFile)
@@ -14,4 +14,4 @@ router.post('/sendFile', upload.single('file'), sendFile)
 router.get('/getChat/:issueId', getChat)
 router.get('/getChatsByIssueId/:issueId', getChatsByIssueId)
 
-module.exports = router;
+export default router;

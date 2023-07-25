@@ -15,7 +15,7 @@ const responseObject: GetChatResponse = {
   messages: [],
 };
 
-exports.getChatsByIssueId = async (req: Request, res: Response) => {
+export const getChatsByIssueId = async (req: Request, res: Response) => {
   try {
     const { issueId } = req.params;
 

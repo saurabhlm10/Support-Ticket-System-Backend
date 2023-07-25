@@ -8,24 +8,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const Issue = require("../../model/Issue");
-exports.getAgentOpenChats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { agentId } = req.params;
-    if (!agentId) {
-        return res.status(401).json({
-            success: false,
-            message: 'AgentId Is Missing'
-        });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAgentOpenChats = void 0;
+const Issue_1 = __importDefault(require("../../model/Issue"));
+const mongoose_1 = require("mongoose");
+const responseObject = {
+    success: false,
+    message: "",
+    issues: [],
+};
+const getAgentOpenChats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { agentEmail } = req.params;
+    if (!agentEmail) {
+        responseObject.message = "agentEmail Is Missing";
+        return res.status(401).json(responseObject);
     }
     try {
-        const openIssues = yield Issue.find({
-            $or: [
-                { raiser: agentId },
-                { handler: agentId }
-            ],
-            status: 'pending'
+        const openIssues = (yield Issue_1.default.find({
+            $or: [{ raiser: agentEmail }, { handler: agentEmail }],
+            status: "pending",
         })
-            .populate('handler').exec()
+            .populate("handler")
+            .exec()
             .then((updatedResponse) => {
             if (updatedResponse) {
                 updatedResponse.forEach((item) => {
@@ -36,14 +43,24 @@ exports.getAgentOpenChats = (req, res) => __awaiter(void 0, void 0, void 0, func
         })
             .catch((e) => {
             console.log(e);
-        });
-        res.status(200).json({
-            success: true,
-            message: 'Agent Open and Requested chats fetched successfully',
-            openIssues
-        });
+            return [];
+        }));
+        responseObject.success = true;
+        responseObject.message = "Agent Open Chats fetched successfully";
+        responseObject.issues = openIssues;
+        res.status(200).json(responseObject);
     }
     catch (error) {
         console.log(error);
+        if (error instanceof mongoose_1.MongooseError) {
+            responseObject.message =
+                error.name === "CastError" ? "Invalid Ids" : error.message;
+            return res.status(401).json(responseObject);
+        }
+        if (error instanceof Error) {
+            responseObject.message = error.message;
+            return res.status(500).json(responseObject);
+        }
     }
 });
+exports.getAgentOpenChats = getAgentOpenChats;
