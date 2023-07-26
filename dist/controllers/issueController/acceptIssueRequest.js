@@ -22,13 +22,13 @@ const responseObject = {
 };
 const acceptIssueRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { issueId, agentId } = req.params;
-        if (!(issueId && agentId)) {
-            responseObject.message = "issueId or agentId Is Missing";
+        const { issueId, agentEmail } = req.params;
+        if (!(issueId && agentEmail)) {
+            responseObject.message = "issueId or agentEmail Is Missing";
             return res.status(401).json(responseObject);
         }
         const response = (yield Issue_1.default.findByIdAndUpdate(issueId, {
-            handler: agentId,
+            handler: agentEmail,
             potentialHandlers: [],
             status: "pending",
         }, {

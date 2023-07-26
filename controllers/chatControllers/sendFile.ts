@@ -15,9 +15,9 @@ interface SendFileResponse {
 
 export const sendFile = async (req: Request, res: Response) => {
   try {
-    const { filename, issueId, senderId, senderName, timestamp } = req.body;
+    const { filename, issueId, senderEmail, senderName, timestamp } = req.body;
 
-    if (!(filename && issueId && senderId && senderName && timestamp)) {
+    if (!(filename && issueId && senderEmail && senderName && timestamp)) {
         responseObject.message = "All fields are Required";
         return res.status(401).json(responseObject);
       }
@@ -27,7 +27,7 @@ export const sendFile = async (req: Request, res: Response) => {
     const message = {
       path,
       filename,
-      senderId,
+      senderEmail,
       senderName,
       issueId,
       timestamp: Number(timestamp),

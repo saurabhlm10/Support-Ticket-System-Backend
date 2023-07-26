@@ -1,4 +1,7 @@
-interface IssueType {
+import { Document, Types } from "mongoose";
+
+interface IssueType extends Document {
+  _id: Types.ObjectId
   tokenId: string;
   type: "assignment" | "batch-change" | "no-access" | "other";
   status: "not-assigned" | "pending" | "resolved";

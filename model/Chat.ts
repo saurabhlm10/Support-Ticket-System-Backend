@@ -10,7 +10,7 @@ const ChatSchema = new mongoose.Schema(
       maxlength: 5,
     },
     participants: {
-      type: [mongoose.Schema.Types.ObjectId],
+      type: [String],
       ref: "User",
       required: true,
       default: [],

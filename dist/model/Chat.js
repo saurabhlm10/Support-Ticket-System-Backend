@@ -13,7 +13,7 @@ const ChatSchema = new mongoose_1.default.Schema({
         maxlength: 5,
     },
     participants: {
-        type: [mongoose_1.default.Schema.Types.ObjectId],
+        type: [String],
         ref: "User",
         required: true,
         default: [],

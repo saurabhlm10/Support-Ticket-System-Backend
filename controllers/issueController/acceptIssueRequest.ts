@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Issue from "../../model/Issue";
-import { IssueType } from "../../types/Issue";
 import { MongooseError } from "mongoose";
+import { IssueType } from "../../types/Issue";
 
 interface AcceptIssueRequestResponse {
   success: boolean;
@@ -17,17 +17,17 @@ const responseObject: AcceptIssueRequestResponse = {
 
 export const acceptIssueRequest = async (req: Request, res: Response) => {
   try {
-    const { issueId, agentId } = req.params;
+    const { issueId, agentEmail } = req.params;
 
-    if (!(issueId && agentId)) {
-      responseObject.message = "issueId or agentId Is Missing";
+    if (!(issueId && agentEmail)) {
+      responseObject.message = "issueId or agentEmail Is Missing";
       return res.status(401).json(responseObject);
     }
 
     const response = (await Issue.findByIdAndUpdate(
       issueId,
       {
-        handler: agentId,
+        handler: agentEmail,
         potentialHandlers: [],
         status: "pending",
       },

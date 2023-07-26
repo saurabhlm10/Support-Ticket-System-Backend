@@ -10,56 +10,53 @@ const issueSchema = new mongoose_1.default.Schema({
         required: true,
         unique: true,
         minlength: 5,
-        maxlength: 5
+        maxlength: 5,
     },
     type: {
         type: String,
         enum: ["assignment", "batch-change", "no-access", "other"],
-        required: true
+        required: true,
     },
     status: {
         type: String,
         enum: ["not-assigned", "pending", "resolved"],
-        required: true
+        required: true,
     },
     studentEmail: {
         type: String,
-        required: true
+        required: true,
     },
     studentPhone: {
         type: String,
-        required: true
+        required: true,
     },
     raiser: {
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        type: String,
+        required: true,
     },
     potentialHandlers: {
-        type: [mongoose_1.default.Schema.Types.ObjectId],
-        ref: 'User',
+        type: [String],
     },
     handler: {
-        type: mongoose_1.default.Schema.Types.Mixed,
-        ref: 'User',
-        default: ""
+        type: String,
+        default: "",
     },
     info: {
-        type: mongoose_1.default.Schema.Types.Mixed
+        type: mongoose_1.default.Schema.Types.Mixed,
     },
     chats: {
         type: [String],
-        default: []
+        default: [],
     },
     description: {
-        type: String
+        type: String,
     },
     attachments: {
         type: [String],
-        default: []
-    }
+        default: [],
+    },
 }, {
-    timestamps: true
+    timestamps: true,
 });
-const Issue = mongoose_1.default.model('Issue', issueSchema);
+const Issue = mongoose_1.default.model("Issue", issueSchema);
 exports.default = Issue;

@@ -11,6 +11,6 @@ const getProfile_1 = require("../controllers/agentController/getProfile");
 const router = express_1.default.Router();
 router.get("/getAgentByRole/:agentRole", getAgentByRole_1.getAgentByRole);
 router.get("/getAllAgents", getAllAgents_1.getAllAgents);
-router.get("/getAgent/:userId", getAgent_1.getAgent);
+router.get("/getAgent/:userEmail", getAgent_1.getAgent);
 router.get("/getprofile", getProfile_1.getProfile);
 exports.default = router;

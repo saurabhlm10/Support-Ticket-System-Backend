@@ -17,14 +17,14 @@ const responseObject: GetAgentResponse = {
 
 export const getAgent = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const { userEmail } = req.params;
 
-    if (!userId) {
-      responseObject.message = "User Id Is Missing";
+    if (!userEmail) {
+      responseObject.message = "userEmail Is Missing";
       return res.status(401).json(responseObject);
     }
 
-    const agent = (await User.findById(userId)) as AgentWithoutPassword | null;
+    const agent = (await User.findOne({email: userEmail})) as AgentWithoutPassword | null;
 
     if (!agent) {
       responseObject.message = "Agent Not Found";
@@ -41,7 +41,7 @@ export const getAgent = async (req: Request, res: Response) => {
     responseObject.agent = {};
     if (error instanceof MongooseError) {
       responseObject.message =
-        error.name === "CastError" ? "Invalid UserId" : error.message;
+        error.name === "CastError" ? "Invalid UserEmail" : error.message;
       return res.status(401).json(responseObject);
     }
     if (error instanceof Error) {

@@ -34,9 +34,9 @@ const getAgentClosedChats = (req, res) => __awaiter(void 0, void 0, void 0, func
             .populate("handler")
             .exec()
             .then((updatedClosedIssues) => {
-            updatedClosedIssues.forEach((item) => {
-                item.handler.password = null;
-            });
+            // updatedClosedIssues.forEach((item) => {
+            //   item.handler.password = null;
+            // });
             return updatedClosedIssues;
         })
             .catch((e) => {

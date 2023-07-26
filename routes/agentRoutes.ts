@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get("/getAgentByRole/:agentRole", getAgentByRole);
 router.get("/getAllAgents", getAllAgents);
-router.get("/getAgent/:userId", getAgent);
+router.get("/getAgent/:userEmail", getAgent);
 router.get("/getprofile", getProfile);
 
 export default router;

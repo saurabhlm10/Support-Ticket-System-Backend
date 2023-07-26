@@ -50,7 +50,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }));
         responseObject.success = true;
         responseObject.message = "User Registered successfully";
-        responseObject.id = user === null || user === void 0 ? void 0 : user._id;
+        responseObject.id = String(user === null || user === void 0 ? void 0 : user._id);
         jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user._id, email }, process.env.SECRET, { expiresIn: "24h" }, (err, token) => {
             if (err)
                 throw err;

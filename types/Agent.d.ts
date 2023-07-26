@@ -1,6 +1,7 @@
-import { Document, Model, Schema } from "mongoose";
+import { Document, Model, Schema, Types } from "mongoose";
 
 interface Agent extends Document {
+  _id: Types.ObjectId;
   name: string;
   email: string;
   password: string;

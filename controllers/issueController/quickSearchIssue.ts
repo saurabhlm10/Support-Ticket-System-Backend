@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Issue from "../../model/Issue";
-import { IssueType } from "../../types/Issue";
 import { MongooseError } from "mongoose";
+import { IssueType } from "../../types/Issue";
 
 interface QuickSearchIssueResponse {
   success: boolean;

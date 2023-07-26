@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Issue from "../../model/Issue";
 import { MongooseError } from "mongoose";
+import { IssueType } from "../../types/Issue";
 
 interface GetAgentOpenChatsResponse {
   success: boolean;

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 import Issue from "../../model/Issue";
 import { MongooseError } from "mongoose";
+import { IssueType } from "../../types/Issue";
 
 interface GetAgentClosedChatsResponse {
   success: boolean;
@@ -31,9 +32,9 @@ export const getAgentClosedChats = async (req: Request, res: Response) => {
       .populate("handler")
       .exec()
       .then((updatedClosedIssues) => {
-        updatedClosedIssues.forEach((item) => {
-          item.handler.password = null;
-        });
+        // updatedClosedIssues.forEach((item) => {
+        //   item.handler.password = null;
+        // });
 
         return updatedClosedIssues;
       })

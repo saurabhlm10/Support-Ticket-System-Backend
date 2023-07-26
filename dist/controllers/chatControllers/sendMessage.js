@@ -19,7 +19,7 @@ const responseObject = {
 };
 const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { issueId, text, senderId, senderName, timestamp } = req.body;
+        const { issueId, text, senderEmail, senderName, timestamp } = req.body;
         if (!issueId) {
             responseObject.message = "Issue Id Is Missing";
             return res.status(401).json(responseObject);
@@ -28,13 +28,13 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             responseObject.message = "Text Cannot Be Empty";
             return res.status(401).json(responseObject);
         }
-        if (!(senderId && senderName && timestamp)) {
+        if (!(senderEmail && senderName && timestamp)) {
             responseObject.message = "All fields are Required";
             return res.status(401).json(responseObject);
         }
         const message = {
             text,
-            senderId,
+            senderEmail,
             senderName,
             issueId,
             timestamp,
@@ -42,7 +42,7 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         yield (0, fetchRedis_1.fetchRedis)("zadd", `chat:${issueId}:messages`, timestamp, JSON.stringify(message));
         pusher_1.pusherServer.trigger(issueId, "incoming-message", {
             text,
-            senderId,
+            senderEmail,
             senderName,
             issueId,
             timestamp,

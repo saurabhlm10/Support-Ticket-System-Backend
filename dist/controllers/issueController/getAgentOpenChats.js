@@ -27,24 +27,26 @@ const getAgentOpenChats = (req, res) => __awaiter(void 0, void 0, void 0, functi
         return res.status(401).json(responseObject);
     }
     try {
-        const openIssues = (yield Issue_1.default.find({
+        console.log(agentEmail);
+        const openIssues = yield Issue_1.default.find({
             $or: [{ raiser: agentEmail }, { handler: agentEmail }],
             status: "pending",
-        })
-            .populate("handler")
-            .exec()
-            .then((updatedResponse) => {
-            if (updatedResponse) {
-                updatedResponse.forEach((item) => {
-                    item.handler.password = null;
-                });
-                return updatedResponse;
-            }
-        })
-            .catch((e) => {
-            console.log(e);
-            return [];
-        }));
+        });
+        // .populate("handler")
+        // .exec()
+        // .then((updatedResponse) => {
+        //   if (updatedResponse) {
+        //     // updatedResponse.forEach((item) => {
+        //     //   item.handler.password = null;
+        //     // });
+        //     return updatedResponse;
+        //   }
+        // })
+        // .catch((e) => {
+        //   console.log(e);
+        //   return [];
+        // })) as IssueType[];
+        console.log('openIssues', openIssues);
         responseObject.success = true;
         responseObject.message = "Agent Open Chats fetched successfully";
         responseObject.issues = openIssues;

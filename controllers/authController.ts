@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import User from "../model/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { MongooseError } from "mongoose";
+import { MongooseError, Types } from "mongoose";
 import { Agent } from "../types/Agent";
 
 interface RegisterResponse {
@@ -52,7 +52,7 @@ export const register = async (req: Request, res: Response) => {
 
     responseObject.success = true;
     responseObject.message = "User Registered successfully";
-    responseObject.id = user?._id;
+    responseObject.id = String(user?._id);
 
     jwt.sign(
       { userId: user?._id, email },

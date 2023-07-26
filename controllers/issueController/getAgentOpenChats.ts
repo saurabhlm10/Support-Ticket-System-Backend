@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 import Issue from "../../model/Issue";
 import { MongooseError } from "mongoose";
+import { IssueType } from "../../types/Issue";
 
 interface GetAgentOpenChatsResponse {
   success: boolean;
@@ -24,24 +25,27 @@ export const getAgentOpenChats = async (req: Request, res: Response) => {
   }
 
   try {
-    const openIssues = (await Issue.find({
+    console.log(agentEmail)
+    const openIssues = await Issue.find({
       $or: [{ raiser: agentEmail }, { handler: agentEmail }],
       status: "pending",
-    })
-      .populate("handler")
-      .exec()
-      .then((updatedResponse) => {
-        if (updatedResponse) {
-          updatedResponse.forEach((item) => {
-            item.handler.password = null;
-          });
-          return updatedResponse;
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-        return [];
-      })) as IssueType[];
+    }) as IssueType[]
+      // .populate("handler")
+      // .exec()
+      // .then((updatedResponse) => {
+      //   if (updatedResponse) {
+      //     // updatedResponse.forEach((item) => {
+      //     //   item.handler.password = null;
+      //     // });
+      //     return updatedResponse;
+      //   }
+      // })
+      // .catch((e) => {
+      //   console.log(e);
+      //   return [];
+      // })) as IssueType[];
+
+      console.log('openIssues', openIssues)
 
     responseObject.success = true;
     responseObject.message = "Agent Open Chats fetched successfully";

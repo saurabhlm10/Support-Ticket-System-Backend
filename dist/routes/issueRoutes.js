@@ -22,11 +22,11 @@ router.post("/raiseIssue/:type", cloudinary_1.upload.fields([
 ]), 
 // upload.single('paymentReceiptImage'),
 raiseIssue_1.raiseIssue);
-router.get('/chats/open/:agentId', getAgentOpenChats_1.getAgentOpenChats);
-router.get('/chats/requested/:agentId', getAgentRequestedChats_1.getAgentRequestedChats);
-router.get('/chats/closed/:agentId', getAgentClosedChats_1.getAgentClosedChats);
+router.get('/chats/open/:agentEmail', getAgentOpenChats_1.getAgentOpenChats);
+router.get('/chats/requested/:agentEmail', getAgentRequestedChats_1.getAgentRequestedChats);
+router.get('/chats/closed/:agentEmail', getAgentClosedChats_1.getAgentClosedChats);
 router.post('/closeIssue/:issueId', closeIssue_1.closeIssue);
 router.get('/searchIssue/:searchTerm', quickSearchIssue_1.quickSearchIssue);
-router.post('/acceptIssueRequest/:issueId/:agentId', acceptIssueRequest_1.acceptIssueRequest);
+router.post('/acceptIssueRequest/:issueId/:agentEmail', acceptIssueRequest_1.acceptIssueRequest);
 router.post('/filterIssues', filterIssues_1.filterIssues);
 exports.default = router;

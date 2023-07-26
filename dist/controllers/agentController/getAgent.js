@@ -22,12 +22,12 @@ const responseObject = {
 };
 const getAgent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { userId } = req.params;
-        if (!userId) {
-            responseObject.message = "User Id Is Missing";
+        const { userEmail } = req.params;
+        if (!userEmail) {
+            responseObject.message = "userEmail Is Missing";
             return res.status(401).json(responseObject);
         }
-        const agent = (yield User_1.default.findById(userId));
+        const agent = (yield User_1.default.findOne({ email: userEmail }));
         if (!agent) {
             responseObject.message = "Agent Not Found";
             return res.status(401).json(responseObject);
@@ -42,7 +42,7 @@ const getAgent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         responseObject.agent = {};
         if (error instanceof mongoose_1.MongooseError) {
             responseObject.message =
-                error.name === "CastError" ? "Invalid UserId" : error.message;
+                error.name === "CastError" ? "Invalid UserEmail" : error.message;
             return res.status(401).json(responseObject);
         }
         if (error instanceof Error) {

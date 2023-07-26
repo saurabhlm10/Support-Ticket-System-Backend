@@ -20,8 +20,8 @@ const responseObject = {
 const sendFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const { filename, issueId, senderId, senderName, timestamp } = req.body;
-        if (!(filename && issueId && senderId && senderName && timestamp)) {
+        const { filename, issueId, senderEmail, senderName, timestamp } = req.body;
+        if (!(filename && issueId && senderEmail && senderName && timestamp)) {
             responseObject.message = "All fields are Required";
             return res.status(401).json(responseObject);
         }
@@ -29,7 +29,7 @@ const sendFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const message = {
             path,
             filename,
-            senderId,
+            senderEmail,
             senderName,
             issueId,
             timestamp: Number(timestamp),

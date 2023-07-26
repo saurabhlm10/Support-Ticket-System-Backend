@@ -22,12 +22,12 @@ router.post("/raiseIssue/:type",
     raiseIssue);
 
 
-router.get('/chats/open/:agentId', getAgentOpenChats)
-router.get('/chats/requested/:agentId', getAgentRequestedChats)
-router.get('/chats/closed/:agentId', getAgentClosedChats)
+router.get('/chats/open/:agentEmail', getAgentOpenChats)
+router.get('/chats/requested/:agentEmail', getAgentRequestedChats)
+router.get('/chats/closed/:agentEmail', getAgentClosedChats)
 router.post('/closeIssue/:issueId', closeIssue)
 router.get('/searchIssue/:searchTerm', quickSearchIssue)
-router.post('/acceptIssueRequest/:issueId/:agentId', acceptIssueRequest)
+router.post('/acceptIssueRequest/:issueId/:agentEmail', acceptIssueRequest)
 router.post('/filterIssues', filterIssues)
 
 
